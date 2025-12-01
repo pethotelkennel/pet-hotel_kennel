@@ -5,7 +5,7 @@ const navItems = [
   { label: '御利用にあたって', path: '/use'},
   { label: '料金', path: '/price'},
   // { label: '予約状況', path: '/reserve'},
-  { label: 'アクセス', path: '/#access'},
+  { label: 'アクセス', path: '#access'},
   { label: '利用規約', path: '/agreement'},
 ];
 
@@ -21,7 +21,7 @@ const currentPath = Astro.url.pathname;
           : currentPath.startsWith(item.path);
       return (
         <li>
-          <a href={`${import.meta.env.BASE_URL}${item.path.replace(/^\//, '')}`} class={isActive ? "active" : ""}>{item.label}</a>
+          <a href={item.path.startsWith('#') ? item.path : `${import.meta.env.BASE_URL}${item.path.replace(/^\//, '')}`}class={isActive ? "active" : ""}>{item.label}</a>
         </li>
       );
     })}
