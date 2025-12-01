@@ -21,7 +21,7 @@ const currentPath = Astro.url.pathname;
           : currentPath.startsWith(item.path);
       return (
         <li>
-          <a href={Astro.resolve(item.path)} class={isActive ? "active" : ""}>{item.label}</a>
+          <a href={`${import.meta.env.BASE_URL}${item.path.replace(/^\//, '')}`} class={isActive ? "active" : ""}>{item.label}</a>
         </li>
       );
     })}

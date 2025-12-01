@@ -22,7 +22,7 @@ import GlobalNav from "@/components/GlobalNav.astro";
     <a class="footer__youtube-icon" href="https://youtube.com/channel/UCNDQd7icdmc3MIzS6AsLSTg?si=WZw__GdfIsnM1-TS" target="_blank">
       <img src={FooterYoutube.src} width={FooterYoutube.width} height={FooterYoutube.height} alt="ユーチューブアイコン" decoding="async">
     </a>
-    <a class="footer__line-icon" href={Astro.resolve('/line/')}>
+    <a class="footer__line-icon" href={`${import.meta.env.BASE_URL}line/`}>
       <img src={FooterLine.src} width={FooterLine.width} height={FooterLine.height} alt="ラインアイコン" decoding="async">
     </a>
   </div>

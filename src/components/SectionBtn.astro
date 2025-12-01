@@ -11,7 +11,7 @@ const {label, href, variant = "use", external = false} = Astro.props;
 import ArrowImg from "@/assets/img/arrow.svg";
 ---
 
-<a href={Astro.resolve(href)} class={`btn btn-${variant}`}>
+<a href={`${import.meta.env.BASE_URL}${href.replace(/^\//, '')}`} class={`btn btn-${variant}`}>
   <span>{label}</span>
   <div class="arrow__circle">
     <img src={ArrowImg.src}>

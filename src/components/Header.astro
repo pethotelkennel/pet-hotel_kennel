@@ -10,7 +10,7 @@ const engName = "PET HOTEL KENNEL"
 
 <header class="global__header">
   <div class="header__top">
-    <a class="header__logo-content" href={Astro.resolve('/')}>
+    <a class="header__logo-content" href={`${import.meta.env.BASE_URL}`}>
       <img src={HeaderLogo.src} width={HeaderLogo.width} height={HeaderLogo.height} alt="犬寝ロゴ" decoding="async">
       <h1>{ name }<span>{ engName }</span></h1>
     </a>
@@ -19,7 +19,7 @@ const engName = "PET HOTEL KENNEL"
         <p>営業時間  6:00~21:00</p>
         <a href="tel:07022124287">070-2212-4287</a>
       </div>
-      <a class="line__btn" href={Astro.resolve('/line/')}>
+      <a class="line__btn" href={`${import.meta.env.BASE_URL}line/`}>
         <img src={LineBtn.src} width={LineBtn.width} height={LineBtn.height} alt="LINE友達追加" decoding="async">
       </a>
     </div>

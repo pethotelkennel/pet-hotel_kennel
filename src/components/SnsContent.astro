@@ -19,7 +19,7 @@ import Line from "@/assets/img/line.svg";
   <a class="youtube__icon" href="https://youtube.com/channel/UCNDQd7icdmc3MIzS6AsLSTg?si=WZw__GdfIsnM1-TS" target="_blank">
     <img src={Youtube.src} width={Youtube.width} height={Youtube.height} alt="ユーチューブアイコン" decoding="async">
   </a>
-  <a class="line__icon" href={Astro.resolve('/line/')}>
+  <a class="line__icon" href={`${import.meta.env.BASE_URL}line/`}>
     <img src={Line.src} width={Line.width} height={Line.height} alt="ラインアイコン" decoding="async">
   </a>
 </div>
