@@ -56,6 +56,7 @@ import ArrowImg from "@/assets/img/arrow.svg";
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      transition: 0.3s ease;
     }
 
     img:last-child {
@@ -64,7 +65,6 @@ import ArrowImg from "@/assets/img/arrow.svg";
     }
   }
 
-  /* PCのホバー */
   @media (min-width: 769px) {
     &:hover {
       background-color: #ffffff;
@@ -74,11 +74,9 @@ import ArrowImg from "@/assets/img/arrow.svg";
       }
 
       .arrow__circle {
-
         img:first-child {
           animation: arrow-slide-out 0.6s forwards ease;
         }
-        
         img:last-child {
           animation: arrow-slide-in 0.6s forwards ease;
         }
@@ -87,7 +85,6 @@ import ArrowImg from "@/assets/img/arrow.svg";
   }
 }
 
-/* ---- アニメーション ---- */
 @keyframes arrow-slide-out {
   0% {
     transform: translate(-50%, -50%);
@@ -109,36 +106,43 @@ import ArrowImg from "@/assets/img/arrow.svg";
     opacity: 1;
   }
 }
+
 @media screen and (max-width: 768px) {
   .btn {
     font-size: 1.6rem;
     gap: 1.6rem;
     padding: 1.2rem 2.4rem;
+
     .arrow__circle {
       width: 2.4rem;
       height: 2.4rem;
-      & img {
+
+      img {
         width: 1.2rem;
         height: 1.2rem;
-        }
-        img:last-child {
-          opacity: 0;
-          transform: translate(-150%, -50%);
-        }
+      }
+
+      img:last-child {
+        opacity: 0;
+        transform: translate(-150%, -50%);
+      }
     }
+
+    /* SPでも hover アニメーションする場合 */
     &:hover {
       background-color: #ffffff;
 
       span {
         color: #B24759;
       }
+
       .arrow__circle {
-          img:first-child {
-            animation: arrow-slide-out 0.6s forwards ease;
-          }
-          img:last-child {
-            animation: arrow-slide-in 0.6s forwards ease;
-          }
+        img:first-child {
+          animation: arrow-slide-out 0.6s forwards ease;
+        }
+        img:last-child {
+          animation: arrow-slide-in 0.6s forwards ease;
+        }
       }
     }
   }
