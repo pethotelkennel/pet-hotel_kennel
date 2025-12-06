@@ -337,53 +337,52 @@ const engName = "PET HOTEL KENNEL"
   const hamburger = document.querySelector(".hamburger");
   const headerBottom = document.querySelector(".header__bottom");
 
-  if (hamburger && headerBottom) {
-    const closeMenu = () => {
-      hamburger.classList.remove("is-active");
-      headerBottom.classList.remove("open");
-      document.body.classList.remove("is-fixed");
-    };
+  if (!hamburger || !headerBottom) return;
 
-    // ハンバーガー開閉
-    hamburger.addEventListener("click", () => {
-      hamburger.classList.toggle("is-active");
-      headerBottom.classList.toggle("open");
-      document.body.classList.toggle("is-fixed");
+  const closeMenu = () => {
+    hamburger.classList.remove("is-active");
+    headerBottom.classList.remove("open");
+    document.body.classList.remove("is-fixed");
+  };
+
+  // ハンバーガー開閉
+  hamburger.addEventListener("click", () => {
+    hamburger.classList.toggle("is-active");
+    headerBottom.classList.toggle("open");
+    document.body.classList.toggle("is-fixed");
+  });
+
+  // GlobalNav 内の #リンクのみに限定
+  const anchorLinks = headerBottom.querySelectorAll(
+    '.global__nav a[href^="#"]'
+  );
+
+  anchorLinks.forEach((anchor) => {
+    anchor.addEventListener("click", (event) => {
+      const targetId = anchor.getAttribute("href");
+      if (!targetId) return;
+
+      const isTopPage = window.location.pathname === "/" || 
+                        window.location.pathname.endsWith("/pet-hotel_kennel/");
+
+      // ✅ 共通：必ず先に閉じる
+      closeMenu();
+
+      // ✅ トップページの場合 → スクロールのみ
+      if (isTopPage) {
+        event.preventDefault();
+
+        setTimeout(() => {
+          const target = document.querySelector(targetId);
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 300);
+      }
+      // ✅ 下層ページの場合 → 通常遷移（JSで邪魔しない）
+      else {
+        // preventDefault しない → href 通りに自動遷移
+      }
     });
-
-    // GlobalNav内の #リンク
-    const anchorLinks = headerBottom.querySelectorAll(
-      '.global__nav a[href^="#"]'
-    );
-
-    anchorLinks.forEach((anchor) => {
-      anchor.addEventListener("click", (event) => {
-        const targetId = anchor.getAttribute("href");
-        if (!targetId) return;
-
-        const isTopPage = window.location.pathname === "/" 
-          || window.location.pathname === import.meta.env.BASE_URL;
-
-        // 先にメニューは閉じる（共通）
-        closeMenu();
-
-        // ✅ トップページにいる場合 → スクロールだけ
-        if (isTopPage) {
-          event.preventDefault();
-
-          setTimeout(() => {
-            const target = document.querySelector(targetId);
-            if (target) {
-              target.scrollIntoView({ behavior: "smooth" });
-            }
-          }, 300);
-        } 
-        // ✅ 下層ページにいる場合 → トップへ遷移
-        else {
-          const rootUrl = `${import.meta.env.BASE_URL}${targetId.replace('#', '#')}`;
-          window.location.href = rootUrl;
-        }
-      });
-    });
-  }
+  });
 </script>
