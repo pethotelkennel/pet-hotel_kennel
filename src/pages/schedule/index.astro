@@ -15,10 +15,15 @@ const baseMonth = now.getMonth(); // 0=1月
 // microCMS から予約データ取得
 const { contents } = await client.get({ endpoint: "reservation" });
 
-// "YYYY-MM-DD" → status のマップ
 const reservations: Record<string, string> = Object.fromEntries(
-  contents.map((item: any) => [item.date, item.status])
+  contents.map((item: any) => {
+    const d = new Date(item.date);
+    d.setHours(d.getHours() + 9); // JST補正（トップと統一）
+    const key = d.toISOString().split("T")[0]; // "YYYY-MM-DD"
+    return [key, item.status];
+  })
 );
+
 
 // 何ヶ月分表示するか（例：今月含めて6ヶ月）
 const MONTH_COUNT = 24;
