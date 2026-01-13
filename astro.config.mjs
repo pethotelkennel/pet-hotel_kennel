@@ -1,23 +1,13 @@
-// // @ts-check
-// import { defineConfig } from 'astro/config';
-
-// // https://astro.build/config
-// export default defineConfig({
-//   site: 'https://voltprogram.github.io',
-//   base: '/pet-hotel_kennel',
-// });
-
-// @ts-check
 import { defineConfig } from 'astro/config';
 
-const isProd = import.meta.env.PROD;
+const isNetlify = !!process.env.NETLIFY;
 
 export default defineConfig({
-  site: isProd
-    ? 'https://voltprogram.github.io/'
-    : 'http://localhost:4321/',
+  site: isNetlify
+    ? 'https://YOUR-SITE.netlify.app'
+    : 'https://voltprogram.github.io/',
 
-  base: isProd
-    ? '/pet-hotel_kennel/'
-    : '/',  // ← ローカルでは base を空にする
+  base: isNetlify
+    ? '/'
+    : '/pet-hotel_kennel/',
 });
