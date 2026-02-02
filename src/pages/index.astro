@@ -1,5 +1,5 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro"
+import BaseLayout from "@/layouts/BaseLayout.astro";
 import SectionTitle from "@/components/SectionTitle.astro";
 import SectionBtn from "@/components/SectionBtn.astro";
 import HeadingPriceTable from "@/components/HeadingPriceTable.astro";
@@ -9,26 +9,35 @@ import FvImg from "@/assets/img/fv-img01.jpg";
 import UseImg from "@/assets/img/use-img01.jpg";
 import InfoImg from "@/assets/img/store-img.jpg";
 
-import ReservationList from '../components/ReservationList.astro';
-import { getCalendarCells } from '../lib/calendar';
-import { client } from '../lib/microcms';
+import ReservationList from "../components/ReservationList.astro";
+import { getCalendarCells } from "../lib/calendar";
+import { fetchListUnder100 } from "../lib/microcms";
 import ScheduleText from "@/components/ScheduleText.astro";
 
-const { contents } = await client.get({ endpoint: 'reservation' });
+// microCMS から予約データ取得（最大100件）
+// ※ date/status だけあれば良いので fields 指定で軽量化
+type ReservationItem = {
+  date: string;
+  status: string;
+};
 
+const { contents } = await fetchListUnder100<ReservationItem>("reservation", {
+  limit: 100,
+  fields: "date,status",
+  orders: "date", // date昇順（必要なら）
+});
+
+// カレンダー表示用（"YYYY-MM-DD" → status）に変換
 const reservations = Object.fromEntries(
-  contents.map(item => {
+  contents.map((item) => {
     const d = new Date(item.date);
     d.setHours(d.getHours() + 9); // JST補正
-    const key = d.toISOString().split('T')[0];
+    const key = d.toISOString().split("T")[0];
     return [key, item.status];
   })
 );
-// dateは YYYY-MM-DD（テキスト型 or JST変換済み前提）
-// const reservations = Object.fromEntries(
-//   contents.map(item => [item.date, item.status])
-// );
 
+// 今日の年月
 const now = new Date();
 const year = now.getFullYear();
 const month = now.getMonth(); // 0 = 1月, 11 = 12月
@@ -49,146 +58,128 @@ const nextMonthCells = getCalendarCells(nextYear, nextMonth);
 ---
 
 <BaseLayout title="ペットホテル犬寝｜山梨県笛吹市八代町北｜営業時間 6:00~21:00" description="山梨県笛吹市八代町北にあるペットホテル犬寝は、営業時間6:00〜21:00まで営業しています。常にオーナーが常駐しているため、安心して御利用いただけます。また、ワンちゃんの状態に合わせたお散歩時間や、お手入れ込みのシャンプーなど充実したサービスがありますので、ぜひ御利用ください。">
-	<section id="fv">
-		<figure class="fv__img">
-			<Picture 
-				src={FvImg}
-				alt="黒の柴犬とプードルが向かい合って、会話をしているように見えるしているように見える様子"
-				widths={[1100,1820]}
-				formats={["avif", "webp", "jpeg"]}
-				sizes="100%"
-				loading="eager"
-				decoding="async"
-			/>
-			<div class="fv__txtbox mochiy-pop">
-			<p class="fv__txt">安心<span>を写真で、</span>LINE<span>からお届け</span></p>
-		</div>
-		</figure>
-	</section>
-	<section id="use">
-		<div class="container">
-			<div class="use__content">
-				<figure class="use__img">
-					<Picture 
-						src={UseImg}
-						alt="ドッグランで会話をしているような2匹の犬"
-						formats={["avif", "webp", "jpeg"]}
-						sizes="100%"
-						loading="lazy"
-						decoding="async"
-					/>
-				</figure>
-				<div class="use__txtbox">
-					<SectionTitle
-						main="御利用にあたって"
-						sub="how to use"
-						subAlign="left-center"
-					/>
-					<p class="use__txt">当店ペットホテル犬寝(ケンネル)は、ペットホテル専門店です。お取り扱いのサービスは、宿泊、お預かり、一時お預かり、お散歩、シャンプー、お手入れなど様々なサービスを取り揃えております。</p>
-					<SectionBtn
-					label="御利用にあたって詳細"
-					href="/use"
-					variant="use"
-				/>
-				</div>
-			</div>
-		</div>
-	</section>
-	<section id="price">
-		<div class="container">
-			<div class="price__content">
-				<SectionTitle
-						main="料金"
-						sub="price"
-						subAlign="center"
-				/>
-				<HeadingPriceTable />
-				<p class="price__txt">
-					各サービスは予約制となっております。時間帯によっては希望日時が埋まってしまう可能性がありますので、お早めに御予約をお願いいたします。
-				</p>
-				<SectionBtn
-					label="料金の詳細を見る"
-					href="/price"
-					variant="price"
-				/>
-			</div>
-		</div>
-	</section>
-	<section id="reservation-top">
-		<div class="container">
-			<SectionTitle
-					main="予約状況"
-					sub="schedule"
-					subAlign="center"
-			/>
-			<div class="reservation-top__content">
-				<ReservationList
-					title={`${year}年${month + 1}月`}
-					items={thisMonthCells}
-					reservations={reservations}
-				/>
-				<ReservationList
-					title={`${nextYear}年${nextMonth + 1}月`}
-					items={nextMonthCells}
-					reservations={reservations}
-				/>
-			</div>
-			<div class="schedule__txt-inner">
-				<ScheduleText />
-			</div>
-			<SectionBtn
-				label="ご予約について詳細"
-				href="/schedule"
-				variant="reservation-status"
-			/>
-		</div>
-	</section>
-	<section id="info">
-		<div class="container">
-			<div class="info__content">
-				<div class="info__txtbox">
-					<SectionTitle
-						main="店舗情報"
-						sub="information"
-						subAlign="left-center"
-					/>
-					<h1 class="info__store">ペットホテル犬寝(ケンネル)</h1>
-					<p class="info__address">
-						〒406-0821<br>
-						山梨県笛吹市八代町北3819-2
-					</p>
-					<a class="info__tel" href="tel:07022124287">070-2212-4287</a>
-					<p class="info__hours">営業時間　6:00~21:00</p>
-					<p class="info__holiday">定休日　　不定休</p>
-					<SnsContent />
-				</div>
-				<figure class="info__img">
-					<Picture 
-						src={InfoImg}
-						alt="建物の外観の様子"
-						formats={["avif", "webp", "jpeg"]}
-						sizes="100%"
-						loading="lazy"
-						decoding="async"
-					/>
-				</figure>
-			</div>
-		</div>
-	</section>
-	<section id="access">
-		<div class="container">
-			<div class="access__content">
-			<SectionTitle
-				main="アクセス"
-				sub="access"
-				subAlign="center"
-			/>
-			<div class="access__map">
-				<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3585.9660176977573!2d138.6410631939684!3d35.62592136110865!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x601bfdd13dc13785%3A0x59f43feb3dcedd29!2z44Oa44OD44OI44Ob44OG44Or54qs5a-d!5e0!3m2!1sja!2sjp!4v1762656672972!5m2!1sja!2sjp" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-			</div>
-			</div>
-		</div>
-	</section>
+  <section id="fv">
+    <figure class="fv__img">
+      <Picture
+        src={FvImg}
+        alt="黒の柴犬とプードルが向かい合って、会話をしているように見えるしているように見える様子"
+        widths={[1100, 1820]}
+        formats={["avif", "webp", "jpeg"]}
+        sizes="100%"
+        loading="eager"
+        decoding="async"
+      />
+      <div class="fv__txtbox mochiy-pop">
+        <p class="fv__txt">安心<span>を写真で、</span>LINE<span>からお届け</span></p>
+      </div>
+    </figure>
+  </section>
+
+  <section id="use">
+    <div class="container">
+      <div class="use__content">
+        <figure class="use__img">
+          <Picture
+            src={UseImg}
+            alt="ドッグランで会話をしているような2匹の犬"
+            formats={["avif", "webp", "jpeg"]}
+            sizes="100%"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+        <div class="use__txtbox">
+          <SectionTitle main="御利用にあたって" sub="how to use" subAlign="left-center" />
+          <p class="use__txt">
+            当店ペットホテル犬寝(ケンネル)は、ペットホテル専門店です。お取り扱いのサービスは、宿泊、お預かり、一時お預かり、お散歩、シャンプー、お手入れなど様々なサービスを取り揃えております。
+          </p>
+          <SectionBtn label="御利用にあたって詳細" href="/use" variant="use" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="price">
+    <div class="container">
+      <div class="price__content">
+        <SectionTitle main="料金" sub="price" subAlign="center" />
+        <HeadingPriceTable />
+        <p class="price__txt">
+          各サービスは予約制となっております。時間帯によっては希望日時が埋まってしまう可能性がありますので、お早めに御予約をお願いいたします。
+        </p>
+        <SectionBtn label="料金の詳細を見る" href="/price" variant="price" />
+      </div>
+    </div>
+  </section>
+
+  <section id="reservation-top">
+    <div class="container">
+      <SectionTitle main="予約状況" sub="schedule" subAlign="center" />
+      <div class="reservation-top__content">
+        <ReservationList
+          title={`${year}年${month + 1}月`}
+          items={thisMonthCells}
+          reservations={reservations}
+        />
+        <ReservationList
+          title={`${nextYear}年${nextMonth + 1}月`}
+          items={nextMonthCells}
+          reservations={reservations}
+        />
+      </div>
+      <div class="schedule__txt-inner">
+        <ScheduleText />
+      </div>
+      <SectionBtn label="ご予約について詳細" href="/schedule" variant="reservation-status" />
+    </div>
+  </section>
+
+  <section id="info">
+    <div class="container">
+      <div class="info__content">
+        <div class="info__txtbox">
+          <SectionTitle main="店舗情報" sub="information" subAlign="left-center" />
+          <h1 class="info__store">ペットホテル犬寝(ケンネル)</h1>
+          <p class="info__address">
+            〒406-0821<br />
+            山梨県笛吹市八代町北3819-2
+          </p>
+          <a class="info__tel" href="tel:07022124287">070-2212-4287</a>
+          <p class="info__hours">営業時間　6:00~21:00</p>
+          <p class="info__holiday">定休日　　不定休</p>
+          <SnsContent />
+        </div>
+
+        <figure class="info__img">
+          <Picture
+            src={InfoImg}
+            alt="建物の外観の様子"
+            formats={["avif", "webp", "jpeg"]}
+            sizes="100%"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="access">
+    <div class="container">
+      <div class="access__content">
+        <SectionTitle main="アクセス" sub="access" subAlign="center" />
+        <div class="access__map">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3585.9660176977573!2d138.6410631939684!3d35.62592136110865!2m3!1f0!2f0!3f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x601bfdd13dc13785%3A0x59f43feb3dcedd29!2z44Oa44OD44OI44Ob44OG44Or54qs5a-d!5e0!3m2!1sja!2sjp!4v1762656672972!5m2!1sja!2sjp"
+            style="border:0;"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
 
 <style lang="scss">
