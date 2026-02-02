@@ -1,10 +1,10 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PageTitle from "@/components/PageTitle.astro";
-import TextTitle from "@/components/TextTitle.astro"
+import TextTitle from "@/components/TextTitle.astro";
 import ReservationList from "@/components/ReservationList.astro";
 import { getCalendarCells } from "@/lib/calendar";
-import { client } from "@/lib/microcms";
+import { fetchListUnder100 } from "@/lib/microcms";
 import ScheduleText from "@/components/ScheduleText.astro";
 
 // 今日
@@ -12,11 +12,24 @@ const now = new Date();
 const baseYear = now.getFullYear();
 const baseMonth = now.getMonth(); // 0=1月
 
-// microCMS から予約データ取得
-const { contents } = await client.get({ endpoint: "reservation" });
+// microCMS から予約データ取得（最大100件）
+// ※ fields で必要な項目だけ取得してビルドを軽くする
+type ReservationItem = {
+  date: string;
+  status: string;
+};
 
+const { contents } = await fetchListUnder100<ReservationItem>("reservation", {
+  limit: 100,
+  // microCMS側のフィールド名が date / status である前提
+  fields: "date,status",
+  // 必要なら並び順を指定（date昇順）
+  orders: "date",
+});
+
+// 予約データをカレンダー表示用に変換
 const reservations: Record<string, string> = Object.fromEntries(
-  contents.map((item: any) => {
+  contents.map((item) => {
     const d = new Date(item.date);
     d.setHours(d.getHours() + 9); // JST補正（トップと統一）
     const key = d.toISOString().split("T")[0]; // "YYYY-MM-DD"
@@ -24,8 +37,7 @@ const reservations: Record<string, string> = Object.fromEntries(
   })
 );
 
-
-// 何ヶ月分表示するか（例：今月含めて6ヶ月）
+// 何ヶ月分表示するか（例：今月含めて24ヶ月）
 const MONTH_COUNT = 24;
 
 // 今月から先のカレンダー情報をまとめて作る
@@ -50,12 +62,13 @@ for (let i = 0; i < MONTH_COUNT; i++) {
 }
 ---
 
-<BaseLayout title="予約状況｜ペットホテル犬寝" description="サービス内容は、宿泊、お預かり、一時お預かり、お散歩、シャンプー、お手入れ(爪切り、肛門腺絞り、足裏バリカン、耳掃除、肉球ケア、マッサージ)、など様々なサービスを取り揃えておりますので、御不明点や気になる点がございましたらお気軽にお問い合わせください。">
+<BaseLayout
+  title="予約状況｜ペットホテル犬寝"
+  description="サービス内容は、宿泊、お預かり、一時お預かり、お散歩、シャンプー、お手入れ(爪切り、肛門腺絞り、足裏バリカン、耳掃除、肉球ケア、マッサージ)、など様々なサービスを取り揃えておりますので、御不明点や気になる点がございましたらお気軽にお問い合わせください。"
+>
   <div id="schedule__pages">
     <div class="container">
-      <PageTitle
-        title="御予約について"
-      />
+      <PageTitle title="御予約について" />
       <p class="price-page__txt">
         各サービスは予約制となっております。お電話での受付時間は6:00〜21:00まで、LINEでの受付は24時間になります。<br class="pc__only">
         時間帯によっては希望の時間帯が埋まってしまう可能性がありますので、早めに御予約をお願い致します。<br class="pc__only">
@@ -63,36 +76,29 @@ for (let i = 0; i < MONTH_COUNT; i++) {
         当ホテルでは事前に御予約が無い日を店舗の休日とさせて頂きますので、当日予約の場合お受けできない場合がありますので御注意下さい。<br class="pc__only">
         お預かり時間には、お会計や、当ホテルのシステム説明、契約などの時間は含まれません。
       </p>
-      <TextTitle
-        title="予約状況"
-      />
+
+      <TextTitle title="予約状況" />
+
       <div class="schedule__inner">
         <div class="reservation-nav">
-          <button
-            type="button"
-            class="nav-btn nav-btn--prev"
-            data-cal-prev
-          >
+          <button type="button" class="nav-btn nav-btn--prev" data-cal-prev>
             前の月
           </button>
+
           <div class="month-picker">
             <span class="month-picker__label">表示月を選択</span>
             <select class="month-picker__select" data-cal-select>
               {calendars.map((cal, index) => (
-                <option value={index}>
-                  {cal.label}
-                </option>
+                <option value={index}>{cal.label}</option>
               ))}
             </select>
           </div>
-          <button
-            type="button"
-            class="nav-btn nav-btn--next"
-            data-cal-next
-          >
+
+          <button type="button" class="nav-btn nav-btn--next" data-cal-next>
             次の月
           </button>
         </div>
+
         <div class="reservation-months">
           {calendars.map((cal, index) => (
             <section
@@ -108,6 +114,7 @@ for (let i = 0; i < MONTH_COUNT; i++) {
             </section>
           ))}
         </div>
+
         <ScheduleText />
       </div>
     </div>
@@ -115,9 +122,7 @@ for (let i = 0; i < MONTH_COUNT; i++) {
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const monthEls = Array.from(
-        document.querySelectorAll("[data-cal-index]")
-      );
+      const monthEls = Array.from(document.querySelectorAll("[data-cal-index]"));
       const prevBtn = document.querySelector("[data-cal-prev]");
       const nextBtn = document.querySelector("[data-cal-next]");
       const selectEl = document.querySelector("[data-cal-select]");
@@ -156,7 +161,7 @@ for (let i = 0; i < MONTH_COUNT; i++) {
         }
       });
 
-      // 🔹 月ジャンプ：セレクト変更で一気にその月へ
+      // 月ジャンプ：セレクト変更で一気にその月へ
       selectEl.addEventListener("change", (e) => {
         const targetIndex = Number(e.target.value);
         if (!Number.isNaN(targetIndex)) {
