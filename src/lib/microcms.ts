@@ -22,4 +22,4 @@ export async function fetchAll(endpoint) {
   } while (all.length < totalCount);
 
   return all;
-}
+}  
