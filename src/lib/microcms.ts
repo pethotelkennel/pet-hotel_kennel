@@ -9,18 +9,15 @@ export const client = createClient({
 
 /**
  * microCMSの一覧を安全に取得（最大100件）
- * - limit未指定だと10件しか返らないため必ず指定
- * - 100件を超える場合はエラーにして気づけるようにする
- * - buildログで追えるようにメッセージを整える
  */
 export async function fetchListUnder100<T>(
   endpoint: string,
   options?: {
-    limit?: number; // 1〜100
+    limit?: number;
     filters?: string;
     orders?: string;
-    fields?: string; // "id,title,createdAt" のように指定可
-    depth?: number;  // 0〜3（必要なら）
+    fields?: string;
+    depth?: number;
   }
 ): Promise<MicroCMSListResponse<T>> {
   const limit = options?.limit ?? 100;
@@ -41,8 +38,6 @@ export async function fetchListUnder100<T>(
       },
     });
 
-    // 「100件以下で運用する」前提なら、100件ぴったりは要注意
-    // ＝本当は100件超えている可能性があるので検知して落とす
     if (res.totalCount > limit) {
       throw new Error(
         `microCMS totalCount (${res.totalCount}) exceeds limit (${limit}). ` +
@@ -52,9 +47,54 @@ export async function fetchListUnder100<T>(
 
     return res;
   } catch (err) {
-    // Cloudflare Pagesのビルドログで追いやすい形にする
     const message =
       err instanceof Error ? err.message : "Unknown error while fetching microCMS.";
     throw new Error(`[microCMS] Failed to fetch list: endpoint=${endpoint} / ${message}`);
+  }
+}
+
+/**
+ * microCMSの一覧を全件取得
+ * - microCMSは1回の取得上限が100件
+ * - 100件を超える場合は offset を使って複数回取得する
+ */
+export async function fetchAllList<T>(
+  endpoint: string,
+  options?: {
+    filters?: string;
+    orders?: string;
+    fields?: string;
+    depth?: number;
+  }
+): Promise<T[]> {
+  const limit = 100;
+  let offset = 0;
+  let allContents: T[] = [];
+  let totalCount = 0;
+
+  try {
+    do {
+      const res = await client.getList<T>({
+        endpoint,
+        queries: {
+          limit,
+          offset,
+          filters: options?.filters,
+          orders: options?.orders,
+          fields: options?.fields,
+          depth: options?.depth,
+        },
+      });
+
+      allContents = [...allContents, ...res.contents];
+      totalCount = res.totalCount;
+      offset += limit;
+    } while (allContents.length < totalCount);
+
+    return allContents;
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Unknown error while fetching microCMS.";
+    throw new Error(`[microCMS] Failed to fetch all list: endpoint=${endpoint} / ${message}`);
   }
 }
