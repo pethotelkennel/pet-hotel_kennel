@@ -11,20 +11,18 @@ import InfoImg from "@/assets/img/store-img.jpg";
 
 import ReservationList from "../components/ReservationList.astro";
 import { getCalendarCells } from "../lib/calendar";
-import { fetchListUnder100 } from "../lib/microcms";
+import { fetchAllList } from "../lib/microcms";
 import ScheduleText from "@/components/ScheduleText.astro";
 
-// microCMS から予約データ取得（最大100件）
-// ※ date/status だけあれば良いので fields 指定で軽量化
+// microCMS から予約データ取得
 type ReservationItem = {
   date: string;
   status: string;
 };
 
-const { contents } = await fetchListUnder100<ReservationItem>("reservation", {
-  limit: 100,
+const contents = await fetchAllList<ReservationItem>("reservation", {
   fields: "date,status",
-  orders: "date", // date昇順（必要なら）
+  orders: "date",
 });
 
 // カレンダー表示用（"YYYY-MM-DD" → status）に変換
@@ -46,7 +44,7 @@ const month = now.getMonth(); // 0 = 1月, 11 = 12月
 const thisMonthDate = new Date(year, month, 1);
 const thisMonthLabel = `${thisMonthDate.getFullYear()}年${thisMonthDate.getMonth() + 1}月`;
 
-// 来月（年またぎも含めて自動で計算される）
+// 来月
 const nextDate = new Date(year, month + 1, 1);
 const nextYear = nextDate.getFullYear();
 const nextMonth = nextDate.getMonth(); // 0–11
