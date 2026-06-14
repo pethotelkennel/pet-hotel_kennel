@@ -12,6 +12,7 @@ const now = new Date();
 const baseYear = now.getFullYear();
 const baseMonth = now.getMonth(); // 0=1月
 
+// microCMS から予約データ取得
 type ReservationItem = {
   date: string;
   status: string;
@@ -26,19 +27,19 @@ const contents = await fetchAllList<ReservationItem>("reservation", {
 const reservations: Record<string, string> = Object.fromEntries(
   contents.map((item) => {
     const d = new Date(item.date);
-    d.setHours(d.getHours() + 9);
+    d.setHours(d.getHours() + 9); // JST補正
     const key = d.toISOString().split("T")[0];
     return [key, item.status];
   })
 );
 
-// 何ヶ月分表示するか（例：今月含めて24ヶ月）
+// 何ヶ月分表示するか
 const MONTH_COUNT = 24;
 
 // 今月から先のカレンダー情報をまとめて作る
 type CalendarInfo = {
   year: number;
-  month: number;
+  month: number; // 0-11
   label: string;
   items: { date: string; isOtherMonth: boolean }[];
 };
